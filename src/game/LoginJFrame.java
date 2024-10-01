@@ -4,11 +4,12 @@ import domain.User;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Random;
 
-public abstract class LoginJFrame extends JFrame implements MouseListener {
+public class LoginJFrame extends JFrame implements MouseListener {
     static ArrayList<User> allUsers = new ArrayList<>();
 
     //在静态代码块存储一些user
@@ -16,6 +17,13 @@ public abstract class LoginJFrame extends JFrame implements MouseListener {
         allUsers.add(new User("zhangsan", "123"));
         allUsers.add(new User("lisi", "1234"));
     }
+    //成员变量
+    JLabel realcheckNumber = new JLabel(getCheckNumber());
+    JButton loginButton = new JButton("登录");
+    JButton registerButton = new JButton("注册");
+    JTextField checkNumberField = new JTextField(20);
+    JTextField userNameField = new JTextField(20);
+    JPasswordField userPasswordField = new JPasswordField(20);
 
     public LoginJFrame() {
         //初始化界面
@@ -35,12 +43,7 @@ public abstract class LoginJFrame extends JFrame implements MouseListener {
         JLabel userNameLabel = new JLabel("用户名:");
         JLabel userPasswordLabel = new JLabel("密码:");
         JLabel checkNumber = new JLabel("验证码:");
-        JTextField userNameField = new JTextField(20);
-        JPasswordField userPasswordField = new JPasswordField(20);
-        JTextField checkNumberField = new JTextField(20);
-        JLabel realcheckNumber = new JLabel(getCheckNumber());
-        JButton loginButton = new JButton("登录");
-        JButton registerButton = new JButton("注册");
+
         JLabel bg = new JLabel(new ImageIcon("src\\image\\loginbg.png"));
         JLabel loginButtonLabel = new JLabel(new ImageIcon("src\\image\\loginButton.png"));
 
@@ -90,7 +93,11 @@ public abstract class LoginJFrame extends JFrame implements MouseListener {
 
 
         //各组件添加点击事件
+        //验证码label点击之后进行更新新的验证码
         realcheckNumber.addMouseListener(this);
+        loginButton.addMouseListener(this);
+        registerButton.addMouseListener(this);
+
     }
 
     //初始化组件的函数
@@ -129,6 +136,84 @@ public abstract class LoginJFrame extends JFrame implements MouseListener {
             builder.append(ch[index]);
         }
         return builder.toString();
+
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        Object ob = e.getSource();
+        if(ob == realcheckNumber){
+            //如果触发验证码的点击事件，验证码进行更新
+            checkNumberField.setText(getCheckNumber());
+        }else if(ob == loginButton){
+            //如果登录按钮被触发，验证输入的用户名密码是否正确
+            String nowUserid = userNameField.getText();
+            String nowPassword = userPasswordField.getText();
+            String nowCheckNumber = checkNumberField.getText();
+
+            checkUser(nowUserid,nowPassword,nowCheckNumber);
+
+        }else if(ob == registerButton){
+            //如果注册按钮被触发
+
+        }
+    }
+
+    private boolean checkUser(String nowUserid, String nowPassword, String nowCheckNumber) {
+        for (int i = 0; i < allUsers.size(); i++) {
+            if(nowUserid.equals(allUsers.get(i).getId())){
+                if(nowPassword.equals(allUsers.get(i).getPassword())){
+                    if(nowCheckNumber.equals(checkNumberField.getText())){
+                        showDialog("登录成功！");
+                    }else{
+                        showDialog("验证码不正确！");
+                        realcheckNumber.setText(getCheckNumber());
+                    }
+                }else{
+                    showDialog("用户名或者密码不正确");
+                }
+            }
+            showDialog("用户名或者密码不正确");
+        }
+        return true;
+    }
+
+    //显示弹窗的函数，指定弹窗中显示的文字
+    public void showDialog(String content){
+        JDialog jd = new JDialog();
+        jd.setSize(200, 150);
+        jd.setAlwaysOnTop(true);
+        //让弹框居中
+        jd.setLocationRelativeTo(null);
+        //弹窗不关闭无法进行下面的操作
+        jd.setModal(true);
+
+        //弹窗里面用label进行显示文字
+        JLabel jLabel = new JLabel(content);
+        jLabel.setBounds(0,0,200,500);
+        jd.getContentPane().add(jLabel);
+
+        //弹窗显示出来
+        jd.setVisible(true);
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
 
     }
 }
