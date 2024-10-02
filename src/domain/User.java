@@ -1,5 +1,7 @@
 package domain;
 
+import java.util.Objects;
+
 public class User {
     private String id;
     private String password;
@@ -46,5 +48,18 @@ public class User {
 
     public String toString() {
         return "User{id = " + id + ", password = " + password + "}";
+    }
+    //因为在登陆时要判断用户的id以及密码是否正确，所以我们要重写一下equals方法
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id) && Objects.equals(password, user.password);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, password);
     }
 }

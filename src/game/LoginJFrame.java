@@ -1,4 +1,4 @@
-package game;
+
 
 import domain.User;
 
@@ -17,8 +17,10 @@ public class LoginJFrame extends JFrame implements MouseListener {
         allUsers.add(new User("zhangsan", "123"));
         allUsers.add(new User("lisi", "1234"));
     }
+
     //成员变量
-    JLabel realcheckNumber = new JLabel(getCheckNumber());
+    String checkNumber = getCheckNumber();
+    JLabel realcheckNumber = new JLabel(checkNumber);
     JButton loginButton = new JButton("登录");
     JButton registerButton = new JButton("注册");
     JTextField checkNumberField = new JTextField(20);
@@ -42,35 +44,34 @@ public class LoginJFrame extends JFrame implements MouseListener {
         //首先定义这些组件，很大可能这些组件要设置在成员变量处
         JLabel userNameLabel = new JLabel("用户名:");
         JLabel userPasswordLabel = new JLabel("密码:");
-        JLabel checkNumber = new JLabel("验证码:");
-
+        JLabel checkNumberLabel = new JLabel("验证码:");
         JLabel bg = new JLabel(new ImageIcon("src\\image\\loginbg.png"));
         JLabel loginButtonLabel = new JLabel(new ImageIcon("src\\image\\loginButton.png"));
 
 
         //设置组件的大小&位置
         //可以直接用一个setBouns函数来设置大小和位置
-        userNameLabel.setBounds(160,60,70,25);
-        userNameField.setBounds(230,60,230,25);
-        userPasswordLabel.setBounds(160,120,70,25);
-        userPasswordField.setBounds(230,120,230,25);
-        checkNumber.setBounds(160,180,70,25);
-        checkNumberField.setBounds(230,180,150,25);
-        realcheckNumber.setBounds(400,180,50,25);
-        registerButton.setBounds(160,280,128,47);
+        userNameLabel.setBounds(160, 60, 70, 25);
+        userNameField.setBounds(230, 60, 230, 25);
+        userPasswordLabel.setBounds(160, 120, 70, 25);
+        userPasswordField.setBounds(230, 120, 230, 25);
+        checkNumberLabel.setBounds(160, 180, 70, 25);
+        checkNumberField.setBounds(230, 180, 150, 25);
+        realcheckNumber.setBounds(400, 180, 50, 25);
+        registerButton.setBounds(160, 280, 128, 47);
         registerButton.setIcon(new ImageIcon("src\\image\\registerButton.png"));
-        loginButton.setBounds(390,280,128,47);
+        loginButton.setBounds(390, 280, 128, 47);
         loginButton.setIcon(new ImageIcon("src\\image\\loginButton.png"));
-        bg.setBounds(0,0,633,423);
+        bg.setBounds(0, 0, 633, 423);
 
         //设置组件的格式
-        Font usernameFont = new Font(null,1,16);
+        Font usernameFont = new Font(null, 1, 16);
         userNameLabel.setFont(usernameFont);
-        Font passwordFont = new Font(null,1,16);
+        Font passwordFont = new Font(null, 1, 16);
         userPasswordLabel.setFont(passwordFont);
-        Font checkNumberFont = new Font(null,1,16);
-        checkNumber.setFont(checkNumberFont);
-        Font realcheckNumberFont = new Font(null,1,16);
+        Font checkNumberFont = new Font(null, 1, 16);
+        checkNumberLabel.setFont(checkNumberFont);
+        Font realcheckNumberFont = new Font(null, 1, 16);
         realcheckNumber.setFont(realcheckNumberFont);
         //去除按钮的边界
         loginButton.setBorderPainted(false);
@@ -84,7 +85,7 @@ public class LoginJFrame extends JFrame implements MouseListener {
         this.getContentPane().add(userNameField);
         this.getContentPane().add(userPasswordLabel);
         this.getContentPane().add(userPasswordField);
-        this.getContentPane().add(checkNumber);
+        this.getContentPane().add(checkNumberLabel);
         this.getContentPane().add(checkNumberField);
         this.getContentPane().add(realcheckNumber);
         this.getContentPane().add(registerButton);
@@ -117,16 +118,15 @@ public class LoginJFrame extends JFrame implements MouseListener {
     }
 
     //生成验证码的函数
-    public String getCheckNumber(){
-        char[] ch =new char[62];
+    public String getCheckNumber() {
+        char[] ch = new char[62];
         for (int i = 0; i < ch.length; i++) {
-            if(i<=9){
-                ch[i]=(char)('0'+i);
-            }
-            else if(i<36){
-                ch[i]=(char)('a'+i-10);
-            }else{
-                ch[i]=(char)('A'+i-36);
+            if (i <= 9) {
+                ch[i] = (char) ('0' + i);
+            } else if (i < 36) {
+                ch[i] = (char) ('a' + i - 10);
+            } else {
+                ch[i] = (char) ('A' + i - 36);
             }
         }
         StringBuilder builder = new StringBuilder();
@@ -138,53 +138,74 @@ public class LoginJFrame extends JFrame implements MouseListener {
         return builder.toString();
 
     }
-
+    //点击
     @Override
     public void mouseClicked(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
         Object ob = e.getSource();
-        if(ob == realcheckNumber){
+        if (ob == realcheckNumber) {
             //如果触发验证码的点击事件，验证码进行更新
-            checkNumberField.setText(getCheckNumber());
-        }else if(ob == loginButton){
+            checkNumber = getCheckNumber();
+            realcheckNumber.setText(checkNumber);
+        } else if (ob == loginButton) {
             //如果登录按钮被触发，验证输入的用户名密码是否正确
+            //获得输入的用户信息
             String nowUserid = userNameField.getText();
             String nowPassword = userPasswordField.getText();
             String nowCheckNumber = checkNumberField.getText();
+            //先判断各个输入是不是空，再判断是否正确
 
-            checkUser(nowUserid,nowPassword,nowCheckNumber);
-
-        }else if(ob == registerButton){
-            //如果注册按钮被触发
-
-        }
-    }
-
-    private boolean checkUser(String nowUserid, String nowPassword, String nowCheckNumber) {
-        for (int i = 0; i < allUsers.size(); i++) {
-            if(nowUserid.equals(allUsers.get(i).getId())){
-                if(nowPassword.equals(allUsers.get(i).getPassword())){
-                    if(nowCheckNumber.equals(checkNumberField.getText())){
-                        showDialog("登录成功！");
-                    }else{
-                        showDialog("验证码不正确！");
-                        realcheckNumber.setText(getCheckNumber());
-                    }
-                }else{
-                    showDialog("用户名或者密码不正确");
-                }
+            //第一步：验证码输入是不是空
+            if (nowCheckNumber.length() == 0) {
+                showDialog("验证码不能为空");
+                return;
             }
-            showDialog("用户名或者密码不正确");
+            //第二步：验证用户名或者密码是不是空
+            if (nowUserid.length() == 0 || nowPassword.length() == 0) {
+                showDialog("用户名或者密码不能为空");
+                return;
+            }
+
+            //验证码是否正确，一般忽略大小写
+            if(!nowCheckNumber.equalsIgnoreCase(checkNumber)) {
+                showDialog("验证码不正确，请重新输入");
+                return;
+            }
+
+            //验证码正确，开始验证用户名和密码
+            //contains底层是依赖equals方法判断的，所以需要重写equals方法
+            User nowUser = new User(nowUserid, nowPassword);
+            if(allUsers.contains(nowUser)) {
+                //关闭当前登录页面
+                this.setVisible(false);
+                //打开新的游戏界面
+                new GameJFrame();
+            }else {
+                showDialog("用户名或密码错误");
+            }
+
+            //checkUser(nowUserid,nowPassword,nowCheckNumber);
+
+        } else if (ob == registerButton) {
+            //如果注册按钮被触发
+            showDialog("点击了注册按钮");
         }
-        return true;
     }
+
+    @Override
+    //按下
+    //按下按钮按钮颜色应该改变
+    public void mousePressed(MouseEvent e) {
+        Object ob = e.getSource();
+        if (ob == loginButton) {
+            loginButton.setIcon(new ImageIcon("src\\image\\clickLoginButton.png"));
+        }else if (ob == registerButton) {
+            registerButton.setIcon(new ImageIcon("src\\image\\clickRegisterButton.png"));
+        }
+    }
+
 
     //显示弹窗的函数，指定弹窗中显示的文字
-    public void showDialog(String content){
+    public void showDialog(String content) {
         JDialog jd = new JDialog();
         jd.setSize(200, 150);
         jd.setAlwaysOnTop(true);
@@ -195,16 +216,22 @@ public class LoginJFrame extends JFrame implements MouseListener {
 
         //弹窗里面用label进行显示文字
         JLabel jLabel = new JLabel(content);
-        jLabel.setBounds(0,0,200,500);
+        jLabel.setBounds(0, 0, 200, 500);
         jd.getContentPane().add(jLabel);
 
         //弹窗显示出来
         jd.setVisible(true);
     }
 
+    //松开按钮应该变回原来的颜色
     @Override
     public void mouseReleased(MouseEvent e) {
-
+        Object ob = e.getSource();
+        if(ob == loginButton){
+            loginButton.setIcon(new ImageIcon("src\\image\\loginButton.png"));
+        }else if (ob == registerButton){
+            registerButton.setIcon(new ImageIcon("src\\image\\RegisterButton.png"));
+        }
     }
 
     @Override
