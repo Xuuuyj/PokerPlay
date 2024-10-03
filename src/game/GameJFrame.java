@@ -5,6 +5,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class GameJFrame extends javax.swing.JFrame implements ActionListener {
     //此类为游戏的页面类
@@ -14,6 +16,8 @@ public class GameJFrame extends javax.swing.JFrame implements ActionListener {
     //成员变量
     //牌盒
     ArrayList<Poker> pokerBox = new ArrayList<>();
+    //三张底牌
+    ArrayList<Poker> lordList = new ArrayList<>();
 
     //每个人目前要打出的牌，嵌套集合
     //大集合中有三个小集合
@@ -46,6 +50,8 @@ public class GameJFrame extends javax.swing.JFrame implements ActionListener {
 
     GameJFrame() {
         //构造函数
+        //设置任务栏图标
+        setIconImage(Toolkit.getDefaultToolkit().getImage("D:\\allCode\\JavaProject\\playCard\\src\\image\\poker\\dizhu.png"));
         //初始化界面
         InitJFrame();
         //初始化组件
@@ -64,19 +70,155 @@ public class GameJFrame extends javax.swing.JFrame implements ActionListener {
     }
 
     private void initGame() {
+        //打游戏前的准备工作
+        //创建三个集合来装准备要出的牌
+        ArrayList<Poker> palyer0 = new ArrayList<>();
+        ArrayList<Poker> palyer1 = new ArrayList<>();
+        ArrayList<Poker> palyer2 = new ArrayList<>();
+
+        currentPoker.add(palyer0);
+        currentPoker.add(palyer1);
+        currentPoker.add(palyer2);
+        //显示抢地主不抢地主按钮
+        for (int i = 0; i < landlord.length; i++) {
+            landlord[i].setVisible(true);
+        }
+        //展示倒计时文本
+        for (int i = 0; i < timeCount.length; i++) {
+            timeCount[i].setText("倒计时30秒");
+            timeCount[i].setVisible(true);
+        }
     }
 
     private void initCard() {
-        //先把牌加入到牌盒中
+        //准备牌先把牌加入到牌盒中
+        for (int i = 1; i <= 5; i++) {
+            for (int j = 1; j <= 13; j++) {
+                if (i == 5 && j > 2) {
+                    break;
+                }
+                Poker p = new Poker(i + "-" + j, false);
+                p.setLocation(350, 150);
+                container.add(p);
+                pokerBox.add(p);
+            }
+        }
+        //洗牌
+        Collections.shuffle(pokerBox);
+        //发牌
+        //创建三个集合用来装分发下来的牌，并且把三个集合放到大集合里面进行管理
+        ArrayList<Poker> player0 = new ArrayList<>();
+        ArrayList<Poker> player1 = new ArrayList<>();
+        ArrayList<Poker> player2 = new ArrayList<>();
+
+        //遍历牌盒进行发牌
+        //并且将牌的位置进行移动
+        for (int i = 0; i < pokerBox.size(); i++) {
+            Poker p = pokerBox.get(i);
+            if (i <= 2) {
+                //三张底牌拿出来
+                lordList.add(p);
+                //同时底牌要进行移动，在common文件夹中有移动的动画
+                Common.move(p, p.getLocation(), new Point(270 + 75 * i, 10));
+            } else {
+                if (i % 3 == 0) {
+                    player0.add(p);
+                    Common.move(p, p.getLocation(), new Point(50, 60 + 5 * i));
+                }
+                if (i % 3 == 1) {
+                    //给中间的自己发牌,注意自己的牌展示正面
+                    p.turnFront();
+                    player1.add(p);
+                    Common.move(p, p.getLocation(), new Point(180 + 7 * i, 450));
+                }
+                if (i % 3 == 2) {
+                    player2.add(p);
+                    Common.move(p, p.getLocation(), new Point(700, 5 * i + 60));
+                }
+            }
+            //把当前的牌至于最顶端，这样就会有牌依次错开且叠起来的效果
+            container.setComponentZOrder(p, 0);
+
+        }
+        //把每个人手中牌的ArrayList添加到嵌套循环中
+        stillPoker.add(player0);
+        stillPoker.add(player1);
+        stillPoker.add(player2);
+
+        //排序
+        for (int i = 0; i < stillPoker.size(); i++) {
+            //排序之后记得重新放置牌的顺序
+
+            sortPoker(stillPoker.get(i));
+            //重新放置牌的顺序，利用common中的动画属性
+            Common.rePosition(this, stillPoker.get(i), i);
+        }
+
 
     }
 
-    private void InitView() {
-        //添加组件，这些组件是比较固定的，都会有的，比如说按钮以及倒计时
-        //创建抢地主按钮
+    public void sortPoker(ArrayList<Poker> pokers) {
+        //通过价值的方式进行排序
+        Collections.sort(pokers, new Comparator<Poker>() {
+            @Override
+            public int compare(Poker p1, Poker p2) {
+                String name1 = p1.getName();
+                String name2 = p2.getName();
+                int value1 = getValue(name1);
+                int color1 = Integer.valueOf(name1.substring(0, 1));
+                int value2 = getValue(name2);
+                int color2 = Integer.valueOf(name2.substring(0, 1));
+                int result = value2 - value1;
+                result = result == 0 ? color2 - color1 : result;
+                return result;
+
+            }
+        });
+
+    }
+    //!!!!严重注意踩雷点：字符串不要用==进行比较啊，要用equals
+    public int getValue(String PokerName) {
+        int color = Integer.valueOf(PokerName.substring(0, 1));
+        int value= Integer.valueOf(PokerName.substring( 2));
+
+        if (color==5) {
+            if (value ==1 ) {
+                System.out.println(PokerName);
+                return 16;
+            } else {
+                System.out.println(PokerName);
+                return 17;
+            }
+        }else{
+            if (value ==1 ) {
+                System.out.println(PokerName);
+                return 14;
+            }
+            if (value == 2) {
+                System.out.println(PokerName);
+                return 15;
+            }
+        }
+
+
+        return value;
+
+    }
+
+    //添加组件
+    public void InitView() {
+        //创建抢地主的按钮
         JButton robBut = new JButton("抢地主");
-        //设置大小位置
+        //设置位置
         robBut.setBounds(320, 400, 75, 20);
+        //添加点击事件
+        robBut.addActionListener(this);
+        //设置隐藏
+        robBut.setVisible(false);
+        //添加到数组中统一管理
+        landlord[0] = robBut;
+        //添加到界面中
+        container.add(robBut);
         //添加按钮到container中
         container.add(robBut);
         //将抢地主按钮添加到数组中
@@ -135,6 +277,7 @@ public class GameJFrame extends javax.swing.JFrame implements ActionListener {
     }
 
     private void InitJFrame() {
+
         //设置界面标题
         this.setTitle("斗地主");
         //设置大小
